@@ -1,0 +1,58 @@
+# ============================================
+# Arquivos/pastas geradas pelo Gradle/Android
+# ============================================
+.gradle/
+.cxx/
+captures/
+local.properties
+gradlew
+gradlew.bat
+**/gradle-wrapper.jar
+
+# ============================================
+# Keystore e arquivos sensíveis
+# ============================================
+key.properties
+**/*.keystore
+**/*.jks
+
+# ============================================
+# Flutter e Dart
+# ============================================
+.dart_tool/
+.packages
+.pub-cache/
+.buildlog/
+build/
+flutter_*.png
+pubspec.lock
+
+# ============================================
+# Arquivos gerados por plugins do Flutter
+# ============================================
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+
+# ============================================
+# Firebase (somente se projeto for público)
+# ============================================
+android/app/google-services.json
+firebase.json
+
+# ============================================
+# IDEs (Android Studio, VSCode, etc)
+# ============================================
+.idea/
+.vscode/
+*.iml
+
+# ============================================
+# Logs e arquivos temporários
+# ============================================
+*.log
+
+# ============================================
+# Outros
+# ============================================
+GeneratedPluginRegistrant.java

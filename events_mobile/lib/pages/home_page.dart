@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import '../../model/user.dart';
+import 'feed_page.dart';
+import 'profile_page.dart';
+
+class HomePage extends StatefulWidget {
+  final User userInHomePage;
+
+  const HomePage({super.key, required this.userInHomePage});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const NewsFeedPage(),
+      ProfilePage(userInProfilePage:widget.userInHomePage
+),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.feed),
+            label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Me',
+          ),
+        ],
+      ),
+    );
+  }
+}

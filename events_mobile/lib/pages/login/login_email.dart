@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import '../../core/theme/color_style.dart';
+import '../../core/theme/font_style.dart';
+import '../../model/user.dart';
+import '../home_page.dart';
+
+class LoginEmail extends StatefulWidget {
+  const LoginEmail({super.key});
+
+  @override
+  State<LoginEmail> createState() => _LoginEmailState();
+}
+
+class _LoginEmailState extends State<LoginEmail> {
+  final _emailController = TextEditingController();
+  final _senhaController = TextEditingController();
+
+  void _login() {
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text;
+
+    // Usuário "fake"
+    final userTest = User(
+      nome: 'Beatriz Querubim',
+      email: 'beatriz@email.com',
+      senha: '123456',
+      locale: 'Brasil',
+    );
+
+    if (email == userTest.email && senha == userTest.password) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(userInHomePage: userTest)
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email ou senha incorretos')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: const BackButton(),
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Log in',
+          style: AppTextStyles.heading.copyWith(fontSize: 20,color: isDark ? AppColors.grey20 : AppColors.grey80,),
+        ),
+        elevation: 0,
+      ),
+      
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                hintText: 'Email',
+                filled: true,
+                fillColor: isDark ? AppColors.grey90 : AppColors.grey10,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _senhaController,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Password',
+                filled: true,
+                fillColor: isDark ? AppColors.grey90 : AppColors.grey10,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {}, 
+                child: Text(
+                  'Forgot password?',
+                  style: AppTextStyles.body.copyWith(color: AppColors.brand70),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'By continuing, you agree to our Terms of Service and Privacy Policy.',
+              style: AppTextStyles.caption.copyWith(fontSize: 11,color: isDark ? AppColors.grey20 : AppColors.grey80,),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _login, 
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brand70,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: Text(
+                'Log in',
+                style: AppTextStyles.button.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+}
