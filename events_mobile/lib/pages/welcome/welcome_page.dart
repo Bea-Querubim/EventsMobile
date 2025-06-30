@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/color_style.dart';
 import '../../core/theme/font_style.dart';
-import '../../widget/caroussel_welcome.dart';
+import '../../widget/caroussel_welcome.dart.txt';
 import '../../app/routes.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -42,9 +42,6 @@ class WelcomePage extends StatelessWidget {
                   ],
                 ),
               ),
-
-              const CarousselWelcome(),
-
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brand60,
