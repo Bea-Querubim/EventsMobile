@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../core/theme/font_style.dart';
 import '../../core/theme/color_style.dart';
 import '../../services/auth_service.dart';
+import '../../widget/eventos/listar_eventos_prestador.dart';
 import '../profile/profile_page.dart';
+import '../relatorios/relatorios.dart';
 import '../welcome/welcome_page.dart';
 
 class HomePrestador extends StatefulWidget {
@@ -23,6 +25,8 @@ class _HomePrestadorState extends State<HomePrestador> {
 
     final List<Widget> pages = [
       _buildDashboard(context, primaryColor),
+      ListarEventosPrestador(usuarioEmail: widget.userProfile['email']),
+      const RelatorioServicos(),
       const ProfilePage(),
     ];
 
@@ -47,7 +51,7 @@ class _HomePrestadorState extends State<HomePrestador> {
                 (route) => false,
               );
             },
-          )
+          ),
         ],
       ),
       body: pages[_selectedIndex],
@@ -58,6 +62,14 @@ class _HomePrestadorState extends State<HomePrestador> {
         onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Início'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Meus Eventos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Relatorios',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
@@ -69,9 +81,19 @@ class _HomePrestadorState extends State<HomePrestador> {
       _GridItem(Icons.add_circle, 'Criar Serviço', '/criar-servicos'),
       _GridItem(Icons.fastfood, 'Cadastrar Produtos', '/cadastrar-produtos'),
       _GridItem(Icons.search, 'Buscar Eventos', '/buscar-eventos'),
-      _GridItem(Icons.list_alt, 'Meus Serviços', '/servicos', requiresEmail: true),
+      _GridItem(
+        Icons.list_alt,
+        'Meus Serviços',
+        '/servicos',
+        requiresEmail: true,
+      ),
       _GridItem(Icons.bar_chart, 'Relatório Financeiro', '/relatorios'),
-      _GridItem(Icons.calendar_today, 'Meus Eventos', '/listar-meus-eventos', requiresEmail: true),
+      _GridItem(
+        Icons.calendar_today,
+        'Meus Eventos',
+        '/listar-meus-eventos',
+        requiresEmail: true,
+      ),
     ];
 
     return Padding(
@@ -80,40 +102,49 @@ class _HomePrestadorState extends State<HomePrestador> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        children: items.map((item) {
-          return InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              if (item.requiresEmail) {
-                Navigator.pushNamed(context, item.route, arguments: widget.userProfile['email']);
-              } else {
-                Navigator.pushNamed(context, item.route);
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.08),
+        children:
+            items.map((item) {
+              return InkWell(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: primaryColor),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(2, 2),
+                onTap: () {
+                  if (item.requiresEmail) {
+                    Navigator.pushNamed(
+                      context,
+                      item.route,
+                      arguments: widget.userProfile['email'],
+                    );
+                  } else {
+                    Navigator.pushNamed(context, item.route);
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: primaryColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(item.icon, size: 40, color: primaryColor),
-                  const SizedBox(height: 12),
-                  Text(item.label, style: AppTextStyles.body, textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item.icon, size: 40, color: primaryColor),
+                      const SizedBox(height: 12),
+                      Text(
+                        item.label,
+                        style: AppTextStyles.body,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
       ),
     );
   }

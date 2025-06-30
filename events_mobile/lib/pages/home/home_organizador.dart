@@ -26,8 +26,9 @@ class _HomeOrganizadorPageState extends State<HomeOrganizadorPage> {
     final String email = widget.userProfile['email'] ?? '';
 
     final pages = [
-      _buildHomePage(email), // Página inicial com grid
-      const ProfilePage(),   // Perfil
+      _buildHomePage(email),
+      const ProfilePage(),  
+      SolicitacoesServicos(emailOrganizador: email),
     ];
 
     return Scaffold(
@@ -58,7 +59,6 @@ class _HomeOrganizadorPageState extends State<HomeOrganizadorPage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           BottomNavigationBarItem(icon: Icon(Icons.pending_actions), label: 'Solicitações'),
-
         ],
       ),
     );

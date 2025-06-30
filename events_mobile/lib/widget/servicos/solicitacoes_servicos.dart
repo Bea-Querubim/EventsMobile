@@ -24,23 +24,47 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
   }
 
   Future<List<Map<String, dynamic>>> _buscarSolicitacoes() async {
-    final eventosQuery = await FirebaseFirestore.instance
-        .collection('eventos')
-        .where('idOrganizador', isEqualTo: widget.emailOrganizador)
-        .get();
+    final eventosQuery =
+        await FirebaseFirestore.instance
+            .collection('eventos')
+            .where('idOrganizador', isEqualTo: widget.emailOrganizador)
+            .get();
 
     final eventoIds = eventosQuery.docs.map((e) => e.id).toList();
 
-    final servicosQuery = await FirebaseFirestore.instance
-        .collection('servicosPrestados')
-        .where('eventoId', whereIn: eventoIds.isEmpty ? ['---'] : eventoIds)
-        .get();
+    final servicosQuery =
+        await FirebaseFirestore.instance
+            .collection('servicosPrestados')
+            .where('eventoId', whereIn: eventoIds.isEmpty ? ['---'] : eventoIds)
+            .get();
 
-    return servicosQuery.docs.map((doc) {
+    List<Map<String, dynamic>> lista = [];
+
+    for (var doc in servicosQuery.docs) {
       final data = doc.data();
       data['id'] = doc.id;
-      return data;
-    }).toList();
+
+      // 🔍 Buscar nome do evento interno se necessário
+      final eventoId = data['eventoId'];
+      if (eventoId != null) {
+        final eventoDoc =
+            await FirebaseFirestore.instance
+                .collection('eventos')
+                .doc(eventoId)
+                .get();
+
+        if (eventoDoc.exists) {
+          final eventoData = eventoDoc.data();
+          data['nomeEvento'] = eventoData?['titulo'] ?? 'Evento interno';
+        } else {
+          data['nomeEvento'] = 'Evento interno';
+        }
+      }
+
+      lista.add(data);
+    }
+
+    return lista;
   }
 
   Future<void> _aprovarSolicitacao(Map<String, dynamic> solicitacao) async {
@@ -48,7 +72,9 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
     final categoria = solicitacao['categoria'];
     final usuarioId = solicitacao['usuarioId'];
 
-    final eventoRef = FirebaseFirestore.instance.collection('eventos').doc(eventoId);
+    final eventoRef = FirebaseFirestore.instance
+        .collection('eventos')
+        .doc(eventoId);
 
     final eventoDoc = await eventoRef.get();
     if (!eventoDoc.exists) return;
@@ -57,10 +83,7 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
     final List<dynamic> servicos = List.from(eventoData['servicos'] ?? []);
 
     if (!servicos.any((s) => s['nome'] == categoria)) {
-      servicos.add({
-        'id': usuarioId,
-        'nome': categoria,
-      });
+      servicos.add({'id': usuarioId, 'nome': categoria});
 
       await eventoRef.update({'servicos': servicos});
     }
@@ -72,7 +95,10 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
   }
 
   Future<void> _recusarSolicitacao(String idSolicitacao) async {
-    await FirebaseFirestore.instance.collection('servicosPrestados').doc(idSolicitacao).delete();
+    await FirebaseFirestore.instance
+        .collection('servicosPrestados')
+        .doc(idSolicitacao)
+        .delete();
   }
 
   void _atualizarLista() {
@@ -88,10 +114,12 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _futureSolicitacoes,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
 
           final solicitacoes = snapshot.data!;
-          if (solicitacoes.isEmpty) return const Center(child: Text('Nenhuma solicitação encontrada.'));
+          if (solicitacoes.isEmpty)
+            return const Center(child: Text('Nenhuma solicitação encontrada.'));
 
           return ListView.builder(
             itemCount: solicitacoes.length,
@@ -102,45 +130,66 @@ class _SolicitacoesServicosState extends State<SolicitacoesServicos> {
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: ListTile(
-                  title: Text(s['nomeEvento']),
-                  subtitle: Text('Serviço: ${s['categoria']} • Solicitado por: ${s['usuarioId']}'),
-                  trailing: aprovado == null
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: 'Aprovar',
-                              icon: const Icon(Icons.check, color: Colors.green),
-                              onPressed: () async {
-                                await _aprovarSolicitacao(s);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Serviço aprovado e adicionado ao evento!')),
-                                );
-                                _atualizarLista();
-                              },
-                            ),
-                            IconButton(
-                              tooltip: 'Recusar',
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () async {
-                                await _recusarSolicitacao(s['id']);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Solicitação recusada.')),
-                                );
-                                _atualizarLista();
-                              },
-                            ),
-                          ],
-                        )
-                      : aprovado == true
+                  title: Text(s['nomeEvento'] ?? 'Evento interno'),
+                  subtitle: Text(
+                    'Serviço: ${s['categoria']} • Solicitado por: ${s['usuarioId']}',
+                  ),
+                  trailing:
+                      aprovado == null
+                          ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Aprovar',
+                                icon: const Icon(
+                                  Icons.check,
+                                  color: Colors.green,
+                                ),
+                                onPressed: () async {
+                                  await _aprovarSolicitacao(s);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Serviço aprovado e adicionado ao evento!',
+                                      ),
+                                    ),
+                                  );
+                                  _atualizarLista();
+                                },
+                              ),
+                              IconButton(
+                                tooltip: 'Recusar',
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  await _recusarSolicitacao(s['id']);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Solicitação recusada.'),
+                                    ),
+                                  );
+                                  _atualizarLista();
+                                },
+                              ),
+                            ],
+                          )
+                          : aprovado == true
                           ? const Text(
-                              'Aprovado',
-                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                            )
-                          : const Text(
-                              'Recusado',
-                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            'Aprovado',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
                             ),
+                          )
+                          : const Text(
+                            'Recusado',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                 ),
               );
             },
