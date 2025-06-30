@@ -1,14 +1,7 @@
-plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id("dev.flutter.flutter-gradle-plugin")
-}
-
 android {
     namespace = "com.example.events_mobile"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -44,5 +37,17 @@ flutter {
     source = "../.."
 }
 
-apply plugin: 'com.google.gms.google-services'
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+}
+
+plugins {
+    id("com.android.application");
+    id("kotlin-android");
+    id("com.google.gms.google-services");
+    id("dev.flutter.flutter-gradle-plugin");
+}
+
 

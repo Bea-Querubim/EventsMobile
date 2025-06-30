@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../core/theme/color_style.dart';
-import '../core/theme/font_style.dart';
-import '../widget/caroussel_welcome.dart';
-import '../app/routes.dart';
+import '../../core/theme/color_style.dart';
+import '../../core/theme/font_style.dart';
+import '../../widget/caroussel_welcome.dart';
+import '../../app/routes.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -10,6 +10,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    print('Buildando WelcomePage');
 
     return Scaffold(
       backgroundColor:
@@ -56,7 +57,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/form');
+                  Navigator.pushNamed(context, '/sign');
                 },
                 child: Text(
                   'Create account',
@@ -67,7 +68,6 @@ class WelcomePage extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, AppRoutes.login);
-                  Navigator.pushNamed(context, '/login');
                 },
                 child: Text(
                   'Have an account? Log in',

@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     projectId: 'eventsmobile-3843e',
     storageBucket: 'eventsmobile-3843e.firebasestorage.app',
   );
+
 }

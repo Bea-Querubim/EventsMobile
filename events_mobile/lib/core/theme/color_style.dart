@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  static const Color brandDark = Color(0xFF3700B3);
+
   //Cores retiradas do figma:
   static const Color brand20 = Color(0xFFECEDFF);
   static const Color brand30 = Color(0xFFDBD4FF);

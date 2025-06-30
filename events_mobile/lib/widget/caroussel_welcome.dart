@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:youlearn/core/theme/color_style.dart';
+import 'package:events_mobile/core/theme/color_style.dart';
 
 class CarousselWelcome extends StatefulWidget {
   const CarousselWelcome({super.key});

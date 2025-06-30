@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/color_style.dart';
 import '../../core/theme/font_style.dart';
-import '../../model/user.dart';
+import '../../model/user.dart.txt';
 import '../home_page.dart';
+
 
 class LoginEmail extends StatefulWidget {
   const LoginEmail({super.key});
