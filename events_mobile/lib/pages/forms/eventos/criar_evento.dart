@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/categoria_servicos.dart';
 import '../../../model/events.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class CriarEvento extends StatefulWidget {
   final String? eventoId;
@@ -89,9 +91,88 @@ class _CriarEventoState extends State<CriarEvento> {
     }
   }
 
+  Future<void> _obterLocalizacao() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Verifica se o serviço de localização está ativado
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Serviço de localização desativado')),
+      );
+      await _converterCoordenadasParaEndereco();
+      return;
+    }
+
+    // Verifica permissões
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permissão de localização negada')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Permissão de localização permanentemente negada'),
+        ),
+      );
+      return;
+    }
+
+    // Obtém localização
+    final pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      latitude = pos.latitude;
+      longitude = pos.longitude;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Localização obtida com sucesso!')));
+  }
+
   TimeOfDay _parseTime(String timeStr) {
     final parts = timeStr.split(":");
     return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
+
+  Future<void> _converterCoordenadasParaEndereco() async {
+    if (latitude == null || longitude == null) return;
+
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude!,
+        longitude!,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final Placemark place = placemarks.first;
+        setState(() {
+          local =
+              '${place.street}, ${place.subLocality}, '
+              '${place.locality} - ${place.administrativeArea}, '
+              '${place.postalCode}';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Endereço atualizado com sucesso!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao obter endereço: $e')));
+    }
   }
 
   @override
@@ -193,6 +274,18 @@ class _CriarEventoState extends State<CriarEvento> {
                         initialValue: local,
                         onChanged: (val) => local = val,
                       ),
+
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.my_location),
+                        label: const Text('Usar minha localização'),
+                        onPressed: _obterLocalizacao,
+                      ),
+                      if (latitude != null && longitude != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text('Lat: $latitude\nLong: $longitude'),
+                        ),
+
                       _buildLabel('Tipo do Evento'),
                       DropdownButtonFormField<TipoEvento>(
                         value: tipoEventoSelecionado,

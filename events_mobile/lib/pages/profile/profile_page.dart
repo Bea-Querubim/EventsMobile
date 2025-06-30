@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../../core/theme/color_style.dart';
 import '../../../core/theme/font_style.dart';
-import '../../model/user.dart'; 
+import '../../model/user.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,6 +19,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   UserProfile? profile;
   bool loading = true;
+  File? _imageFile;
 
   @override
   void initState() {
@@ -26,10 +30,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadProfile() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(currentUser.uid)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(currentUser.uid)
+              .get();
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -39,13 +44,32 @@ class _ProfilePageState extends State<ProfilePage> {
             email: data['email'] ?? '',
             senha: data['senha'] ?? '',
             telefone: data['telefone'] ?? 0,
-            tipo: data['tipo'] == 'organizador'
-                ? TipoUsuario.organizador
-                : TipoUsuario.prestador,
+            tipo:
+                data['tipo'] == 'organizador'
+                    ? TipoUsuario.organizador
+                    : TipoUsuario.prestador,
           );
           loading = false;
         });
       }
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      final directory =
+          await getApplicationDocumentsDirectory(); // Pasta local do app
+      final String fileName = path.basename(pickedFile.path);
+      final File localImage = await File(
+        pickedFile.path,
+      ).copy('${directory.path}/$fileName');
+
+      setState(() {
+        _imageFile = localImage;
+      });
     }
   }
 
@@ -54,9 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (loading || profile == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final firstName = profile!.nome.split(' ').first;
@@ -80,17 +102,24 @@ class _ProfilePageState extends State<ProfilePage> {
           Center(
             child: Column(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 40,
-                  backgroundImage: AssetImage('assets/images/avatars/1.png'),
+                  backgroundImage:
+                      _imageFile != null
+                          ? FileImage(_imageFile!)
+                          : const AssetImage('assets/images/avatars/1.png')
+                              as ImageProvider,
                 ),
+
                 const SizedBox(height: 8),
+
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _pickImageFromCamera,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? AppColors.accentIntenseDark
-                        : AppColors.accentMutedLight,
+                    backgroundColor:
+                        isDark
+                            ? AppColors.accentIntenseDark
+                            : AppColors.accentMutedLight,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -117,7 +146,9 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildProfileRow('Email', profile!.email, context),
           _buildProfileRow(
             'Tipo de usuário',
-            profile!.tipo == TipoUsuario.organizador ? 'Organizador' : 'Prestador de serviços',
+            profile!.tipo == TipoUsuario.organizador
+                ? 'Organizador'
+                : 'Prestador de serviços',
             context,
           ),
         ],
